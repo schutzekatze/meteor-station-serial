@@ -17,7 +17,7 @@ const int INIT_WAIT_SECONDS = 2;
 
 HANDLE serial_handle;
 
-int init() {
+int port_init() {
 	serial_handle = CreateFile("COM7",
         GENERIC_READ | GENERIC_WRITE,
         0,
@@ -54,7 +54,7 @@ int init() {
 	return 0;
 }
 
-int end() {
+int port_end() {
     if (CloseHandle(serial_handle)) {
         return 0;
     }

@@ -16,11 +16,11 @@ const uint8_t NEGATIVE_ACKNOWLEDGE = 0;
 const unsigned ATTEMPTS_BEFORE_ABORT = 3;
 
 int serial_init() {
-    return init();
+    return port_init();
 }
 
 int serial_end() {
-    return end();
+    return port_end();
 }
 
 int serial_send(const uint32_t msg) {

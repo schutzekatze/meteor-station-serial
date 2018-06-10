@@ -32,8 +32,8 @@
 extern const unsigned BAUD_RATE;
 
 // These functions require platform specific implementations to use serial communication.
-int init();
-int end();
+int port_init();
+int port_end();
 
 unsigned bytes_write(const uint8_t *buffer, const unsigned n);
 unsigned bytes_read(uint8_t *buffer, const unsigned n);

@@ -32,7 +32,7 @@ int baud2constant(const int baud)
     }
 }
 
-int init() {
+int port_init() {
 	tty = open(TTY_PATH, O_RDWR | O_NOCTTY);
     if (tty == -1) {
         return -1;
@@ -77,7 +77,7 @@ int init() {
 	return 0;
 }
 
-int end() {
+int port_end() {
 	return close(tty);
 }
 

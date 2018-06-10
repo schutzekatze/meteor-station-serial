@@ -1,19 +1,24 @@
 /*
- * avr.c
+ * avr.cpp
  *
  * Copyleft 2018 Vladimir Nikolić
  */
 
 #ifdef __AVR
 
+#include <HardwareSerial.h>
+extern "C" {
 #include "../serial.h"
+}
 
-int init() {
+extern HardwareSerial Serial;
+
+int port_init() {
     Serial.begin(BAUD_RATE);
 	return 0;
 }
 
-int end() {
+int port_end() {
     return 0;
 }
 
