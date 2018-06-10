@@ -1,9 +1,24 @@
-#include "serial_comm.h"
+/*
+ * serial_com.c
+ *
+ * Copyleft 2018 Vladimir Nikolić
+ */
+
+#include "serial.h"
+#include "serial_com.h"
 
 #include <math.h>
 
+int serial_init() {
+    return init();	
+}
+
+int serial_end() {
+    return end();	
+}
+
 int serial_comm_send(const uint32_t msg) {
-    uint32_t network_msg = endianess_host2net(msg);
+    uint32_t network_msg = endiannness_host2net(msg);
     uint8_t checksum, response;
 	unsigned bytes_sent;
 	unsigned i;
@@ -62,6 +77,6 @@ int serial_comm_receive(uint32_t *msg) {
 		return -1;
 	}
 
-    *msg = endianess_net2host(network_msg);
+    *msg = endianness_net2host(network_msg);
 	return 0;
 }
