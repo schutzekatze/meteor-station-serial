@@ -25,17 +25,17 @@ int init() {
         OPEN_EXISTING,
         FILE_ATTRIBUTE_NORMAL,
         NULL);
-		
+
 	if (serial_handle == INVALID_HANDLE_VALUE) {
-	    return -1;	
+	    return -1;
 	}
-	
+
 	DCB dcb_serial_params = {0};
-	
+
 	if (!GetCommState(serial_handle, &dcb_serial_params)) {
-	    return -1;	
+	    return -1;
 	}
-	
+
     dcb_serial_params.BaudRate = BAUD_RATE; //CBR_9600;
     dcb_serial_params.ByteSize = 8;
     dcb_serial_params.StopBits = ONESTOPBIT;
@@ -46,19 +46,19 @@ int init() {
     if(!SetCommState(serial_handle, &dcb_serial_params)) {
         return -1;
     }
-       
+
 	PurgeComm(serial_handle, PURGE_RXCLEAR | PURGE_TXCLEAR);
 
     Sleep(INIT_WAIT_SECONDS * 1000);
-	
+
 	return 0;
 }
 
 int end() {
-    if (CloseHandle(this->hSerial)) {
+    if (CloseHandle(serial_handle)) {
         return 0;
     }
-    return -1;	
+    return -1;
 }
 
 unsigned bytes_write(const uint8_t *buffer, const unsigned n) {
@@ -75,10 +75,10 @@ unsigned bytes_read(uint8_t *buffer, const unsigned n) {
 	DWORD errors;
     ClearCommError(serial_handle, &errors, &status);
 
-    if (status.cbInQue > 0) {		
+    if (status.cbInQue > 0) {
 		to_read = n;
 		if (status.cbInQue < n) {
-		    to_read = status.cbInQue;	
+		    to_read = status.cbInQue;
 		}
 
         ReadFile(serial_handle, buffer, to_read, &bytes_read, NULL);
@@ -87,11 +87,11 @@ unsigned bytes_read(uint8_t *buffer, const unsigned n) {
     return bytes_read;
 }
 
-uint32_t endianess_host2net(const uint32_t msg) {
+uint32_t endianness_host2net(const uint32_t msg) {
     return htonl(msg);
 }
 
-uint32_t endianess_net2host(const uint32_t msg) {
+uint32_t endianness_net2host(const uint32_t msg) {
     return ntohl(msg);
 }
 

@@ -9,20 +9,26 @@
 
 #include <math.h>
 
+const unsigned BAUD_RATE = 9600;
+
+const uint8_t ACKNOWLEDGE = 255;
+const uint8_t NEGATIVE_ACKNOWLEDGE = 0;
+const unsigned ATTEMPTS_BEFORE_ABORT = 3;
+
 int serial_init() {
-    return init();	
+    return init();
 }
 
 int serial_end() {
-    return end();	
+    return end();
 }
 
-int serial_comm_send(const uint32_t msg) {
-    uint32_t network_msg = endiannness_host2net(msg);
+int serial_send(const uint32_t msg) {
+    uint32_t network_msg = endianness_host2net(msg);
     uint8_t checksum, response;
 	unsigned bytes_sent;
 	unsigned i;
-	
+
 	checksum = 0;
     for (i = 0; i < sizeof(network_msg); i++) {
         checksum += (network_msg >> i * 8) & 0x000000FFUL;
@@ -42,29 +48,29 @@ int serial_comm_send(const uint32_t msg) {
             return 0;
         }
     }
-	
+
 	return -1;
 }
 
-int serial_comm_receive(uint32_t *msg) {
+int serial_receive(uint32_t *msg) {
     uint32_t network_msg;
     uint8_t checksum, calculated_checksum;
     unsigned bytes_received;
     unsigned i, j;
-	
+
     for(i = 0; i < ATTEMPTS_BEFORE_ABORT; i++) {
         bytes_received = 0;
         while (bytes_received < sizeof(network_msg)) {
 			bytes_received += bytes_read((uint8_t*)&network_msg + bytes_received, sizeof(network_msg) - bytes_received);
         }
-		
+
 		while (bytes_read(&checksum, sizeof(checksum)) == 0);
 
         calculated_checksum = 0;
         for (j = 0; j < sizeof(network_msg); j++) {
             calculated_checksum += (network_msg >> j * 8) & 0x000000FFUL;
         }
-		
+
         if (calculated_checksum == checksum) {
 			while (bytes_write((const uint8_t*)&ACKNOWLEDGE, sizeof(ACKNOWLEDGE)) == 0);
             break;
@@ -72,7 +78,7 @@ int serial_comm_receive(uint32_t *msg) {
 			while (bytes_write((const uint8_t*)&NEGATIVE_ACKNOWLEDGE, sizeof(NEGATIVE_ACKNOWLEDGE)) == 0);
         }
     }
-	
+
 	if (i == ATTEMPTS_BEFORE_ABORT) {
 		return -1;
 	}

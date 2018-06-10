@@ -7,9 +7,10 @@
 #ifndef SERIAL_COM_H
 #define SERIAL_COM_H
 
+#include <stdint.h>
+
 /*
- * Sends/receives given messages and returns 0 on success,
- * or non-zero on failure.
+ * All routines return 0 on success, and non-0 on failure.
  */
 
 int serial_init();

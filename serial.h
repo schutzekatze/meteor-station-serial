@@ -14,11 +14,11 @@
  * The mode used is 8N1, 8 bit character size, no parity and 1 stop bit.
  * All messages are fixed size of 4 bytes in network byte order, i.e. big endian.
  * Every message is followed by a checksum byte, a simple sum of message bytes.
- * If on receive the checksum is correct, a ACKNOWLEDGE byte is sent back.
- * If the checksum is incorrect, a NEGATIVE_ACKNOWLEDGE byte is sent back.
+ * If on receive the checksum is correct, an ACKNOWLEDGE byte (255) is sent back.
+ * If the checksum is incorrect, a NEGATIVE_ACKNOWLEDGE byte (0) is sent back.
  * If an error occurs with an acknowledge byte, assume values greater than 127
  * to be ACKNOWLEDGE, and less than or equal to 127 to be NEGATIVE_ACKNOWLEDGE.
- * On negative acknowledge, the message is resent up to ATTEMPTS_BEFORE_ABORT times.
+ * On negative acknowledge, the message is resent up to ATTEMPTS_BEFORE_ABORT (3) times.
  * If all attempts fail, the communication should abort and throw an error.
  *
  * Both sides of the communication should include this header, and implement
@@ -29,12 +29,7 @@
 
 #include <stdint.h>
 
-const unsigned BAUD_RATE = 9600;
-
-const uint8_t ACKNOWLEDGE = 255;
-const uint8_t NEGATIVE_ACKNOWLEDGE = 0;
-
-const unsigned ATTEMPTS_BEFORE_ABORT = 3;
+extern const unsigned BAUD_RATE;
 
 // These functions require platform specific implementations to use serial communication.
 int init();

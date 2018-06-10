@@ -14,7 +14,7 @@ int init() {
 }
 
 int end() {
-    return 0;	
+    return 0;
 }
 
 unsigned bytes_write(const uint8_t *buffer, const unsigned n) {
@@ -40,11 +40,11 @@ unsigned bytes_read(uint8_t *buffer, const unsigned n) {
                    ((x)>>24 & 0x000000FFUL) )
 #define ntohl(x) htonl(x)
 
-uint32_t endianess_host2net(const uint32_t msg) {
+uint32_t endianness_host2net(const uint32_t msg) {
     return htonl(msg);
 }
 
-uint32_t endianess_net2host(const uint32_t msg) {
+uint32_t endianness_net2host(const uint32_t msg) {
     return ntohl(msg);
 }
 
