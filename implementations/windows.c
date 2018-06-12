@@ -18,7 +18,13 @@ const int INIT_WAIT_SECONDS = 2;
 HANDLE serial_handle;
 
 int port_init() {
-	serial_handle = CreateFile("COM7",
+    int i;
+    char com_string[32];
+    for (i = 1; i < 255; i++) {
+        SetLastError(0);
+
+        sprintf(com_string, "COM%d", i);
+        serial_handle = CreateFile(com_string,
         GENERIC_READ | GENERIC_WRITE,
         0,
         NULL,
@@ -26,9 +32,14 @@ int port_init() {
         FILE_ATTRIBUTE_NORMAL,
         NULL);
 
-	if (serial_handle == INVALID_HANDLE_VALUE) {
-	    return -1;
-	}
+        if (GetLastError() != ERROR_FILE_NOT_FOUND) {
+            break;
+        }
+    }
+
+    if (serial_handle == INVALID_HANDLE_VALUE) {
+        return -1;
+    }
 
 	DCB dcb_serial_params = {0};
 
