@@ -6,7 +6,7 @@
 
 #ifdef __linux__
 
-#include "../serial.h"
+#include "serial.h"
 
 #include <unistd.h>
 #include <fcntl.h>
@@ -71,9 +71,9 @@ int port_init() {
     options.c_cc[VTIME] = TIMEOUT_WINDOW;
 
     tcsetattr(tty, TCSANOW, &options);
-	
+
 	sleep(INIT_WAIT_SECONDS);
-	
+
 	return 0;
 }
 
@@ -87,14 +87,6 @@ unsigned bytes_write(const uint8_t *buffer, const unsigned n) {
 
 unsigned bytes_read(uint8_t *buffer, const unsigned n) {
 	return read(tty, buffer, n);
-}
-
-uint32_t endianness_net2host(const uint32_t msg) {
-    return ntohl(msg);	
-}
-
-uint32_t endianness_host2net(const uint32_t msg) {
-    return htonl(msg);	
 }
 
 #endif /* __linux__ */

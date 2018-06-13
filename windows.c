@@ -6,9 +6,8 @@
 
 #ifdef _WIN32
 
-#include "../serial.h"
+#include "serial.h"
 
-#include <winsock2.h>
 #include <windows.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -96,14 +95,6 @@ unsigned bytes_read(uint8_t *buffer, const unsigned n) {
     }
 
     return bytes_read;
-}
-
-uint32_t endianness_host2net(const uint32_t msg) {
-    return htonl(msg);
-}
-
-uint32_t endianness_net2host(const uint32_t msg) {
-    return ntohl(msg);
 }
 
 #endif /* _WIN32 */

@@ -22,7 +22,7 @@
  * If all attempts fail, the communication should abort and throw an error.
  *
  * Both sides of the communication should include this header, and implement
- * the init, end, bytes_write, bytes_read, endianness_host2net and endianness_net2host
+ * the port_init, port_end, bytes_write, bytes_read
  * specific to their platform. You can then use serial_send and
  * serial_receive functions that perform the communication.
  */
@@ -37,8 +37,5 @@ int port_end();
 
 unsigned bytes_write(const uint8_t *buffer, const unsigned n);
 unsigned bytes_read(uint8_t *buffer, const unsigned n);
-
-uint32_t endianness_net2host(const uint32_t msg);
-uint32_t endianness_host2net(const uint32_t msg);
 
 #endif /* SERIAL_H */

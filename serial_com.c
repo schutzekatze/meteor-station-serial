@@ -23,8 +23,32 @@ int serial_end() {
     return port_end();
 }
 
+static uint32_t htonl(const uint32_t n)
+{
+    uint32_t r;
+    unsigned char *rp = (unsigned char *)&r;
+
+    rp[0] = (n & 0xff000000) >> 24;
+    rp[1] = (n & 0x00ff0000) >> 16;
+    rp[2] = (n & 0x0000ff00) >>  8;
+    rp[3] = (n & 0x000000ff)      ;
+
+    return r;
+}
+
+static uint32_t ntohl(const uint32_t n)
+{
+    unsigned char *np = (unsigned char *)&n;
+
+    return
+        ((uint32_t)np[0] << 24) |
+        ((uint32_t)np[1] << 16) |
+        ((uint32_t)np[2] <<  8) |
+        ((uint32_t)np[3]      );
+}
+
 int serial_send(const uint32_t msg) {
-    uint32_t network_msg = endianness_host2net(msg);
+    uint32_t network_msg = htonl(msg);
     uint8_t checksum, response;
 	unsigned bytes_sent;
 	unsigned i;
@@ -83,6 +107,6 @@ int serial_receive(uint32_t *msg) {
 		return -1;
 	}
 
-    *msg = endianness_net2host(network_msg);
+    *msg = ntohl(network_msg);
 	return 0;
 }
