@@ -19,7 +19,7 @@ HANDLE serial_handle;
 int port_init() {
     int i;
     char com_string[32];
-    for (i = 1; i < 255; i++) {
+    for (i = 255; i > 0; i--) {
         SetLastError(0);
 
         sprintf(com_string, "COM%d", i);
