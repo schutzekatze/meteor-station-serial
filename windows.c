@@ -22,7 +22,7 @@ int port_init() {
     for (i = 255; i > 0; i--) {
         SetLastError(0);
 
-        sprintf(com_string, "COM%d", i);
+        sprintf(com_string, "\\\\.\\COM%d", i);
         serial_handle = CreateFile(com_string,
         GENERIC_READ | GENERIC_WRITE,
         0,
