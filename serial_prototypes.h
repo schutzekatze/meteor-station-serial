@@ -1,11 +1,11 @@
 /*
- * serial.h
+ * serial_prototypes.h
  *
  * Copyleft 2018 Vladimir Nikolić
  */
 
-#ifndef SERIAL_H
-#define SERIAL_H
+#ifndef SERIAL_PROTOTYPES_H
+#define SERIAL_PROTOTYPES_H
 
 /*
  * This header declares routines for serial communication between
@@ -31,11 +31,11 @@
 
 extern const unsigned BAUD_RATE;
 
-// These functions require platform specific implementations to use serial communication.
 int port_init();
 int port_end();
 
+// These return the number of written/read bytes, or negative on error
 unsigned bytes_write(const uint8_t *buffer, const unsigned n);
 unsigned bytes_read(uint8_t *buffer, const unsigned n);
 
-#endif /* SERIAL_H */
+#endif /* SERIAL_PROTOTYPES_H */

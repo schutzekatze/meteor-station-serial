@@ -6,7 +6,7 @@
 
 #ifdef __linux__
 
-#include "serial.h"
+#include "serial_prototypes.h"
 
 #include <unistd.h>
 #include <fcntl.h>

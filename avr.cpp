@@ -8,7 +8,7 @@
 
 #include <HardwareSerial.h>
 extern "C" {
-#include "serial.h"
+#include "serial_prototypes.h"
 }
 
 extern HardwareSerial Serial;

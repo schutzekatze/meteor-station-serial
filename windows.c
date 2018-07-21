@@ -6,7 +6,7 @@
 
 #ifdef _WIN32
 
-#include "serial.h"
+#include "serial_prototypes.h"
 
 #include <windows.h>
 #include <stdio.h>
@@ -73,7 +73,9 @@ int port_end() {
 
 unsigned bytes_write(const uint8_t *buffer, const unsigned n) {
     DWORD bytes_written = 0;
-    WriteFile(serial_handle, buffer, n, &bytes_written, NULL);
+    if (!WriteFile(serial_handle, buffer, n, &bytes_written, NULL)) {
+        return -1;
+    }
 	return bytes_written;
 }
 
@@ -91,7 +93,9 @@ unsigned bytes_read(uint8_t *buffer, const unsigned n) {
 		    to_read = status.cbInQue;
 		}
 
-        ReadFile(serial_handle, buffer, to_read, &bytes_read, NULL);
+        if (!ReadFile(serial_handle, buffer, to_read, &bytes_read, NULL)) {
+            return -1;
+        }
     }
 
     return bytes_read;
