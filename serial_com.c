@@ -9,7 +9,7 @@
 
 #include <math.h>
 
-const unsigned BAUD_RATE = 4800;
+const unsigned BAUD_RATE = 9600;
 
 const uint8_t ACKNOWLEDGE = 255;
 const uint8_t NEGATIVE_ACKNOWLEDGE = 0;
