@@ -22,20 +22,19 @@
  * If all attempts fail, the communication should abort and throw an error.
  *
  * Both sides of the communication should include this header, and implement
- * the port_init, port_end, bytes_write, bytes_read
- * specific to their platform. You can then use serial_send and
- * serial_receive functions that perform the communication.
+ * the ports_init, ports_end, bytes_write, bytes_read
+ * specific to their platform.
  */
 
 #include <stdint.h>
 
-extern const unsigned BAUD_RATE;
+extern const unsigned SERIAL_BAUD_RATE;
 
-int port_init();
-int port_end();
+int ports_init(unsigned *port_count);
+int ports_end(unsigned *port_count);
 
 // These return the number of written/read bytes, or negative on error
-unsigned bytes_write(const uint8_t *buffer, const unsigned n);
-unsigned bytes_read(uint8_t *buffer, const unsigned n);
+unsigned bytes_write(unsigned port, const uint8_t *buffer, const unsigned n);
+unsigned bytes_read(unsigned port, uint8_t *buffer, const unsigned n);
 
 #endif /* SERIAL_PROTOTYPES_H */

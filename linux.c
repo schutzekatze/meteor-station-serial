@@ -13,11 +13,11 @@
 #include <termios.h>
 #include <arpa/inet.h>
 
-static const char* TTY_PATH = "/dev/ttyACM0";
+static const char* TTY_PATH = "/dev/ttyACM"; // Append the port number to get full path
 static const int TIMEOUT_WINDOW = 20; // Tenths of a second
 static const int INIT_WAIT_SECONDS = 2;
 
-static int tty;
+static int ttys[16]; // Lol titties
 
 int baud2constant(const int baud)
 {
@@ -32,7 +32,7 @@ int baud2constant(const int baud)
     }
 }
 
-int port_init() {
+int ports_init(unsigned *port_count) {
 	tty = open(TTY_PATH, O_RDWR | O_NOCTTY);
     if (tty == -1) {
         return -1;
