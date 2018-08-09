@@ -4,7 +4,7 @@
  * Copyleft 2018 Vladimir Nikolić
  */
 
-#include "serial.h"
+#include "serial_prototypes.h"
 #include "serial_com.h"
 
 #include <math.h>
