@@ -8,7 +8,9 @@
 #include "serial_prototypes.h"
 #include <math.h>
 
-const unsigned SERIAL_BAUD_RATE = 9600;
+const unsigned SERIAL_BAUD_RATE = 4800;
+
+extern const uint8_t RECOGNIZE_TOKENS[3] = { 36, 86, 95 };
 
 const uint8_t ACKNOWLEDGE = 255;
 const uint8_t NEGATIVE_ACKNOWLEDGE = 0;
@@ -73,16 +75,13 @@ int serial_send(unsigned port, const uint32_t msg) {
                 (const uint8_t*)&network_msg + bytes_sent,
                 sizeof(network_msg) - bytes_sent
             );
-            if (result < 0) return -1;
+            if (result <= 0) return -1;
 
             bytes_sent += result;
         }
 
-		while ((result = bytes_write(port, &checksum, sizeof(checksum))) == 0);
-        if (result < 0) return -1;
-
-        while ((result = bytes_read(port, &response, sizeof(response))) == 0);
-        if (result < 0) return -1;
+        if (bytes_write(port, &checksum, sizeof(checksum)) <= 0) return -1;
+        if (bytes_read (port, &response, sizeof(response)) <= 0) return -1;
 
         if (fabs((int)response - ACKNOWLEDGE) < fabs((int)response - NEGATIVE_ACKNOWLEDGE)) {
             return 0;
@@ -106,13 +105,12 @@ int serial_receive(unsigned port, uint32_t *msg) {
                 (uint8_t*)&network_msg + bytes_received,
                 sizeof(network_msg) - bytes_received
             );
-            if (result < 0) return -1;
+            if (result <= 0) return -1;
 
             bytes_received += result;
         }
 
-		while ((result = bytes_read(&checksum, sizeof(checksum))) == 0);
-        if (result < 0) return -1;
+        if (bytes_read(&checksum, sizeof(checksum)) <= 0) return -1;
 
         calculated_checksum = 0;
         for (j = 0; j < sizeof(network_msg); j++) {
@@ -120,20 +118,10 @@ int serial_receive(unsigned port, uint32_t *msg) {
         }
 
         if (calculated_checksum == checksum) {
-			while ((result = bytes_write(
-                port,
-                (const uint8_t*)&ACKNOWLEDGE,
-                sizeof(ACKNOWLEDGE))) == 0
-            );
-            if (result < 0) return -1;
+            if (bytes_write(port, (const uint8_t*)&ACKNOWLEDGE, sizeof(ACKNOWLEDGE)) <= 0) return -1;
             break;
         } else {
-			while ((result = bytes_write(
-                port,
-                (const uint8_t*)&NEGATIVE_ACKNOWLEDGE,
-                sizeof(NEGATIVE_ACKNOWLEDGE))) == 0
-            );
-            if (result < 0) return -1;
+            if (bytes_write(port, (const uint8_t*)&NEGATIVE_ACKNOWLEDGE, sizeof(NEGATIVE_ACKNOWLEDGE)) <= 0) return -1;
         }
     }
 

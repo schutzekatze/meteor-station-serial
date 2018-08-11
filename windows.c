@@ -71,7 +71,7 @@ int port_end() {
     return -1;
 }
 
-unsigned bytes_write(const uint8_t *buffer, const unsigned n) {
+int bytes_write(const uint8_t *buffer, const unsigned n) {
     DWORD bytes_written = 0;
     if (!WriteFile(serial_handle, buffer, n, &bytes_written, NULL)) {
         return -1;
@@ -79,7 +79,7 @@ unsigned bytes_write(const uint8_t *buffer, const unsigned n) {
 	return bytes_written;
 }
 
-unsigned bytes_read(uint8_t *buffer, const unsigned n) {
+int bytes_read(uint8_t *buffer, const unsigned n) {
     DWORD bytes_read = 0;
     unsigned to_read;
 

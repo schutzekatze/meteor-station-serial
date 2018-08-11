@@ -32,6 +32,17 @@ int baud2constant(const int baud)
     }
 }
 
+static int open_port(char* port_path) {
+
+}
+
+static int recognized_port(char* port_path) {
+    if (access(port_path, F_OK) != -1) {
+
+    }
+    return -1;
+}
+
 int ports_init(unsigned *port_count) {
 	tty = open(TTY_PATH, O_RDWR | O_NOCTTY);
     if (tty == -1) {
@@ -39,6 +50,8 @@ int ports_init(unsigned *port_count) {
     } else {
         fcntl(tty, F_SETFL, 0);
     }
+
+    ioctl(serial_fd, FIONREAD, &bytes_avail);
 
     struct termios options;
     tcgetattr(tty, &options);
@@ -77,16 +90,21 @@ int ports_init(unsigned *port_count) {
 	return 0;
 }
 
-int port_end() {
-	return close(tty);
+int ports_end(unsigned *port_count) {
+    while (*port_count > 0) {
+        if (close(ttys[(*port_count) - 1]) < 0) {
+            return -1;
+        }
+        *port_count--;
+    }
+    return 0;
 }
 
-unsigned bytes_write(const uint8_t *buffer, const unsigned n) {
-	return write(tty, buffer, n);
+int bytes_write(unsigned port, const uint8_t *buffer, const unsigned n) {
+    return write(ttys[port], buffer, n);
 }
-
-unsigned bytes_read(uint8_t *buffer, const unsigned n) {
-	return read(tty, buffer, n);
+int bytes_read(unsigned port, uint8_t *buffer, const unsigned n) {
+    return read(ttys[port], buffer, n);
 }
 
 #endif /* __linux__ */

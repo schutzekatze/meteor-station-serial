@@ -29,12 +29,13 @@
 #include <stdint.h>
 
 extern const unsigned SERIAL_BAUD_RATE;
+extern const uint8_t RECOGNIZE_TOKENS[3];
 
 int ports_init(unsigned *port_count);
 int ports_end(unsigned *port_count);
 
 // These return the number of written/read bytes, or negative on error
-unsigned bytes_write(unsigned port, const uint8_t *buffer, const unsigned n);
-unsigned bytes_read(unsigned port, uint8_t *buffer, const unsigned n);
+int bytes_write(unsigned port, const uint8_t *buffer, const unsigned n);
+int bytes_read(unsigned port, uint8_t *buffer, const unsigned n);
 
 #endif /* SERIAL_PROTOTYPES_H */
