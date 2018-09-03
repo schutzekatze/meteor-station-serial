@@ -1,20 +1,20 @@
 /*
  * serial_com.c
  *
- * Copyleft 2018 Vladimir Nikolić
+ * Copyright 2018 Vladimir Nikolić
  */
 
 #include "serial_com.h"
 #include "serial_prototypes.h"
+
+#include <stdint.h>
 #include <math.h>
 
-const unsigned SERIAL_BAUD_RATE = 4800;
+static const uint8_t ACKNOWLEDGE = 255;
+static const uint8_t NEGATIVE_ACKNOWLEDGE = 0;
+static const unsigned ATTEMPTS_BEFORE_ABORT = 3;
 
-extern const uint8_t RECOGNIZE_TOKENS[3] = { 36, 86, 95 };
-
-const uint8_t ACKNOWLEDGE = 255;
-const uint8_t NEGATIVE_ACKNOWLEDGE = 0;
-const unsigned ATTEMPTS_BEFORE_ABORT = 3;
+unsigned serial_port_count = 0;
 
 static uint32_t htonl(const uint32_t n)
 {
@@ -39,8 +39,6 @@ static uint32_t ntohl(const uint32_t n)
         ((uint32_t)np[2] <<  8) |
         ((uint32_t)np[3]      );
 }
-
-unsigned serial_port_count = 0;
 
 int serial_init() {
     if (serial_port_count == 0) {
@@ -110,7 +108,7 @@ int serial_receive(unsigned port, uint32_t *msg) {
             bytes_received += result;
         }
 
-        if (bytes_read(&checksum, sizeof(checksum)) <= 0) return -1;
+        if (bytes_read(port, &checksum, sizeof(checksum)) <= 0) return -1;
 
         calculated_checksum = 0;
         for (j = 0; j < sizeof(network_msg); j++) {
@@ -119,16 +117,12 @@ int serial_receive(unsigned port, uint32_t *msg) {
 
         if (calculated_checksum == checksum) {
             if (bytes_write(port, (const uint8_t*)&ACKNOWLEDGE, sizeof(ACKNOWLEDGE)) <= 0) return -1;
-            break;
+            *msg = ntohl(network_msg);
+            return 0;
         } else {
             if (bytes_write(port, (const uint8_t*)&NEGATIVE_ACKNOWLEDGE, sizeof(NEGATIVE_ACKNOWLEDGE)) <= 0) return -1;
         }
     }
 
-	if (i == ATTEMPTS_BEFORE_ABORT) {
-		return -1;
-	}
-
-    *msg = ntohl(network_msg);
-	return 0;
+	return -1;
 }

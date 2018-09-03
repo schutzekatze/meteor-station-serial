@@ -1,7 +1,7 @@
 /*
  * serial_com.h
  *
- * Copyleft 2018 Vladimir Nikolić
+ * Copyright 2018 Vladimir Nikolić
  */
 
 #ifndef SERIAL_COM_H
@@ -10,10 +10,10 @@
 #include <stdint.h>
 
 /*
- * All routines return 0 on success, and non-0 on failure.
+ *   Include this header to use serial communication.
+ *   All routines return 0 on success, and negative on failure.
  */
 
-// Initialized with serial_init(). Ports are numbered [0, serial_port_count).
 extern unsigned serial_port_count;
 
 int serial_init();
