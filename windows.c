@@ -11,6 +11,7 @@
 #include <windows.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <fcntl.h>
 
 #define COM_APPEND_UP_TO 256
 #define COM_MAX_COUNT 256
@@ -72,7 +73,7 @@ int ports_init(unsigned *port_count) {
     char port_path[COM_PATH_BUFFER_SIZE];
     int i, j, ports_found = 0, ports_recognized = 0;
 
-    for (i = 0; i < TTY_APPEND_UP_TO; i++) {
+    for (i = 0; i < COM_APPEND_UP_TO; i++) {
         strcpy(port_path, COM_PATH);
         sprintf(port_path + strlen(COM_PATH), "%d", i);
 
@@ -91,10 +92,12 @@ int ports_init(unsigned *port_count) {
     for(i = 0; i < ports_found; i++) {
         int fail = 0, bytes_avail;
 
-        ioctl(ttys[i], FIONREAD, &bytes_avail);
-        if (bytes_avail >= sizeof(RECOGNIZE_TOKENS)) {
+        COMSTAT status;
+    	DWORD errors;
+        ClearCommError(coms[i], &errors, &status);
+        if (status.cbInQue >= sizeof(RECOGNIZE_TOKENS)) {
             uint8_t tokens[sizeof(RECOGNIZE_TOKENS)];
-            FILE *file = fdopen(ttys[i], "r+");
+            FILE *file = _fdopen(_open_osfhandle((long)coms[i], _O_APPEND | _O_RDONLY), "r+");
             for (j = 0; j < sizeof(RECOGNIZE_TOKENS); j++) {
                 tokens[j] = getc(file);
                 if (tokens[j] != RECOGNIZE_TOKENS[j]) {
