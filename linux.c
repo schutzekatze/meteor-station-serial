@@ -1,25 +1,32 @@
 /*
  * linux.c
  *
- * Copyleft 2018 Vladimir Nikolić
+ * Copyright 2018 Vladimir Nikolić
  */
 
 #ifdef __linux__
 
 #include "serial_prototypes.h"
 
+#include <stdio.h>
 #include <unistd.h>
 #include <fcntl.h>
 #include <termios.h>
 #include <arpa/inet.h>
+#include <string.h>
+#include <sys/ioctl.h>
 
-static const char* TTY_PATH = "/dev/ttyACM0";
-static const int TIMEOUT_WINDOW = 20; // Tenths of a second
-static const int INIT_WAIT_SECONDS = 2;
+#define TTY_APPEND_UP_TO 256
+#define TTY_MAX_COUNT 256
+#define TTY_PATH_BUFFER_SIZE 256
+#define TIMEOUT_WINDOW 20 // In tenths of a second
+#define DEVICE_FLUSH_DELAY 2 // In seconds
+#define DEVICE_RECOGNITION_DELAY 4 // In seconds
 
-static int tty;
+static const char* TTY_PATHS[] = { "/dev/ttyACM", "/dev/ttyUSB" }; // Append the port number to get full path
+static int ttys[TTY_MAX_COUNT]; // Lol titties
 
-int baud2constant(const int baud)
+static int baud2constant(const int baud)
 {
     switch (baud)
     {
@@ -32,8 +39,9 @@ int baud2constant(const int baud)
     }
 }
 
-int port_init() {
-	tty = open(TTY_PATH, O_RDWR | O_NOCTTY);
+// Return tty number or -1 on failure.
+static int port_open(char* port_path) {
+    int tty = open(port_path, O_RDWR | O_NOCTTY);
     if (tty == -1) {
         return -1;
     } else {
@@ -44,8 +52,8 @@ int port_init() {
     tcgetattr(tty, &options);
 
     // Set baud rate
-    cfsetispeed(&options, baud2constant(BAUD_RATE));
-    cfsetospeed(&options, baud2constant(BAUD_RATE));
+    cfsetispeed(&options, baud2constant(SERIAL_BAUD_RATE));
+    cfsetospeed(&options, baud2constant(SERIAL_BAUD_RATE));
 
     // Necessary flags
     options.c_cflag |= (CLOCAL | CREAD);
@@ -72,21 +80,81 @@ int port_init() {
 
     tcsetattr(tty, TCSANOW, &options);
 
-	sleep(INIT_WAIT_SECONDS);
+    return tty;
+}
+
+int ports_init(unsigned *port_count) {
+    char port_path[TTY_PATH_BUFFER_SIZE];
+    int i, j, ports_found = 0, ports_recognized = 0;
+
+    for (i = 0; i < sizeof(TTY_PATHS) / sizeof(TTY_PATHS[0]); i++) {
+        for (j = 0; j < TTY_APPEND_UP_TO; j++) {
+            strcpy(port_path, TTY_PATHS[i]);
+            sprintf(port_path + strlen(TTY_PATHS[i]), "%d", j);
+
+            if (access(port_path, F_OK) != -1) {
+                int tty = port_open(port_path);
+                if (tty >= 0) {
+                    ttys[ports_found++] = tty;
+                }
+            }
+        }
+    }
+
+	sleep(DEVICE_FLUSH_DELAY);
+    for (i = 0; i < ports_found; i++) {
+        tcflush(ttys[i], TCIOFLUSH);
+    }
+    sleep(DEVICE_RECOGNITION_DELAY);
+
+    for(i = 0; i < ports_found; i++) {
+        int fail = 0, bytes_avail;
+
+        ioctl(ttys[i], FIONREAD, &bytes_avail);
+        if (bytes_avail >= sizeof(RECOGNIZE_TOKENS)) {
+            uint8_t tokens[sizeof(RECOGNIZE_TOKENS)];
+            FILE *file = fdopen(ttys[i], "r+");
+            for (j = 0; j < sizeof(RECOGNIZE_TOKENS); j++) {
+                tokens[j] = getc(file);
+                if (tokens[j] != RECOGNIZE_TOKENS[j]) {
+                    for (; j >= 0; j--) {
+                        ungetc(tokens[j], file);
+                    }
+                    fail = 1;
+                    break;
+                }
+            }
+        } else {
+            fail = 1;
+        }
+
+        if (fail) {
+            close(ttys[i]);
+        } else {
+            ttys[ports_recognized++] = ttys[i];
+        }
+    }
+    *port_count = ports_recognized;
 
 	return 0;
 }
 
-int port_end() {
-	return close(tty);
+int ports_end(unsigned *port_count) {
+    while (*port_count > 0) {
+        if (close(ttys[(*port_count) - 1]) < 0) {
+            return -1;
+        }
+        (*port_count)--;
+    }
+    return 0;
 }
 
-unsigned bytes_write(const uint8_t *buffer, const unsigned n) {
-	return write(tty, buffer, n);
+int bytes_write(unsigned port, const uint8_t *buffer, const unsigned n) {
+    return write(ttys[port], buffer, n);
 }
 
-unsigned bytes_read(uint8_t *buffer, const unsigned n) {
-	return read(tty, buffer, n);
+int bytes_read(unsigned port, uint8_t *buffer, const unsigned n) {
+    return read(ttys[port], buffer, n);
 }
 
 #endif /* __linux__ */

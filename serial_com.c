@@ -1,27 +1,20 @@
 /*
  * serial_com.c
  *
- * Copyleft 2018 Vladimir Nikolić
+ * Copyright 2018 Vladimir Nikolić
  */
 
-#include "serial_prototypes.h"
 #include "serial_com.h"
+#include "serial_prototypes.h"
 
+#include <stdint.h>
 #include <math.h>
 
-const unsigned BAUD_RATE = 9600;
+static const uint8_t ACKNOWLEDGE = 255;
+static const uint8_t NEGATIVE_ACKNOWLEDGE = 0;
+static const unsigned ATTEMPTS_BEFORE_ABORT = 3;
 
-const uint8_t ACKNOWLEDGE = 255;
-const uint8_t NEGATIVE_ACKNOWLEDGE = 0;
-const unsigned ATTEMPTS_BEFORE_ABORT = 3;
-
-int serial_init() {
-    return port_init();
-}
-
-int serial_end() {
-    return port_end();
-}
+unsigned serial_port_count = 0;
 
 static uint32_t htonl(const uint32_t n)
 {
@@ -47,10 +40,24 @@ static uint32_t ntohl(const uint32_t n)
         ((uint32_t)np[3]      );
 }
 
-int serial_send(const uint32_t msg) {
+int serial_init() {
+    if (serial_port_count == 0) {
+        return ports_init(&serial_port_count);
+    }
+    return 0;
+}
+
+int serial_end() {
+    if (serial_port_count > 0) {
+        return ports_end(&serial_port_count);
+    }
+    return 0;
+}
+
+int serial_send(unsigned port, const uint32_t msg) {
     uint32_t network_msg = htonl(msg);
     uint8_t checksum, response;
-	unsigned bytes_sent;
+	unsigned result, bytes_sent;
 	unsigned i;
 
 	checksum = 0;
@@ -61,12 +68,18 @@ int serial_send(const uint32_t msg) {
     for (i = 0; i < ATTEMPTS_BEFORE_ABORT; i++) {
         bytes_sent = 0;
         while (bytes_sent < sizeof(network_msg)) {
-			bytes_sent += bytes_write((const uint8_t*)&network_msg + bytes_sent, sizeof(network_msg) - bytes_sent);
+			result = bytes_write(
+                port,
+                (const uint8_t*)&network_msg + bytes_sent,
+                sizeof(network_msg) - bytes_sent
+            );
+            if (result <= 0) return -1;
+
+            bytes_sent += result;
         }
 
-		while (bytes_write(&checksum, sizeof(checksum)) == 0);
-
-        while (bytes_read(&response, sizeof(response)) == 0);
+        if (bytes_write(port, &checksum, sizeof(checksum)) <= 0) return -1;
+        if (bytes_read (port, &response, sizeof(response)) <= 0) return -1;
 
         if (fabs((int)response - ACKNOWLEDGE) < fabs((int)response - NEGATIVE_ACKNOWLEDGE)) {
             return 0;
@@ -76,19 +89,26 @@ int serial_send(const uint32_t msg) {
 	return -1;
 }
 
-int serial_receive(uint32_t *msg) {
+int serial_receive(unsigned port, uint32_t *msg) {
     uint32_t network_msg;
     uint8_t checksum, calculated_checksum;
-    unsigned bytes_received;
+    unsigned result, bytes_received;
     unsigned i, j;
 
     for(i = 0; i < ATTEMPTS_BEFORE_ABORT; i++) {
         bytes_received = 0;
         while (bytes_received < sizeof(network_msg)) {
-			bytes_received += bytes_read((uint8_t*)&network_msg + bytes_received, sizeof(network_msg) - bytes_received);
+			result = bytes_read(
+                port,
+                (uint8_t*)&network_msg + bytes_received,
+                sizeof(network_msg) - bytes_received
+            );
+            if (result <= 0) return -1;
+
+            bytes_received += result;
         }
 
-		while (bytes_read(&checksum, sizeof(checksum)) == 0);
+        if (bytes_read(port, &checksum, sizeof(checksum)) <= 0) return -1;
 
         calculated_checksum = 0;
         for (j = 0; j < sizeof(network_msg); j++) {
@@ -96,17 +116,13 @@ int serial_receive(uint32_t *msg) {
         }
 
         if (calculated_checksum == checksum) {
-			while (bytes_write((const uint8_t*)&ACKNOWLEDGE, sizeof(ACKNOWLEDGE)) == 0);
-            break;
+            if (bytes_write(port, (const uint8_t*)&ACKNOWLEDGE, sizeof(ACKNOWLEDGE)) <= 0) return -1;
+            *msg = ntohl(network_msg);
+            return 0;
         } else {
-			while (bytes_write((const uint8_t*)&NEGATIVE_ACKNOWLEDGE, sizeof(NEGATIVE_ACKNOWLEDGE)) == 0);
+            if (bytes_write(port, (const uint8_t*)&NEGATIVE_ACKNOWLEDGE, sizeof(NEGATIVE_ACKNOWLEDGE)) <= 0) return -1;
         }
     }
 
-	if (i == ATTEMPTS_BEFORE_ABORT) {
-		return -1;
-	}
-
-    *msg = ntohl(network_msg);
-	return 0;
+	return -1;
 }
