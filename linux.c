@@ -144,7 +144,7 @@ int ports_end(unsigned *port_count) {
         if (close(ttys[(*port_count) - 1]) < 0) {
             return -1;
         }
-        *port_count--;
+        (*port_count)--;
     }
     return 0;
 }

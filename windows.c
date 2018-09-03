@@ -90,7 +90,7 @@ int ports_init(unsigned *port_count) {
     Sleep(DEVICE_RECOGNITION_DELAY * 1000);
 
     for(i = 0; i < ports_found; i++) {
-        int fail = 0, bytes_avail;
+        int fail = 0;
 
         COMSTAT status;
     	DWORD errors;
@@ -128,7 +128,7 @@ int ports_end(unsigned *port_count) {
         if (CloseHandle(coms[(*port_count) - 1]) == 0) {
             return -1;
         }
-        *port_count--;
+        (*port_count)--;
     }
     return 0;
 }
