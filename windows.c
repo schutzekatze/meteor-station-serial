@@ -47,7 +47,7 @@ static int port_open(char* port_path, HANDLE *com) {
     FILE_ATTRIBUTE_NORMAL,
     NULL);
 
-    if (GetLastError() != ERROR_FILE_NOT_FOUND) return -1;
+    if (GetLastError() == ERROR_FILE_NOT_FOUND) return -1;
     if (handle == INVALID_HANDLE_VALUE) return -1;
 
 	DCB dcb_serial_params = {0};
@@ -144,12 +144,7 @@ int bytes_write(unsigned port, const uint8_t *buffer, const unsigned n) {
 int bytes_read(unsigned port, uint8_t *buffer, const unsigned n) {
     DWORD bytes_read = 0;
 
-	COMSTAT status;
-	DWORD errors;
-    ClearCommError(coms[port], &errors, &status);
-
-    if (status.cbInQue > 0 &&
-    ReadFile(coms[port], buffer, status.cbInQue < n ? status.cbInQue : n, &bytes_read, NULL) == 0) {
+    if (ReadFile(coms[port], buffer, n, &bytes_read, NULL) == 0) {
         return -1;
     }
 
