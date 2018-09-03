@@ -97,7 +97,7 @@ int ports_init(unsigned *port_count) {
         ClearCommError(coms[i], &errors, &status);
         if (status.cbInQue >= sizeof(RECOGNIZE_TOKENS)) {
             uint8_t tokens[sizeof(RECOGNIZE_TOKENS)];
-            FILE *file = _fdopen(_open_osfhandle((long)coms[i], _O_APPEND | _O_RDONLY), "r+");
+            FILE *file = _fdopen(_open_osfhandle((intptr_t)coms[i], _O_APPEND | _O_RDONLY), "r+");
             for (j = 0; j < sizeof(RECOGNIZE_TOKENS); j++) {
                 tokens[j] = getc(file);
                 if (tokens[j] != RECOGNIZE_TOKENS[j]) {
