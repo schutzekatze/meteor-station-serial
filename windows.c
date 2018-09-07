@@ -16,7 +16,7 @@
 #define COM_APPEND_UP_TO 256
 #define COM_MAX_COUNT 256
 #define COM_PATH_BUFFER_SIZE 256
-#define TIMEOUT_WINDOW 2000 // In milliseconds
+#define TIMEOUT_WINDOW 3000 // In milliseconds
 #define DEVICE_FLUSH_DELAY 2 // In seconds
 #define DEVICE_RECOGNITION_DELAY 4 // In seconds
 
