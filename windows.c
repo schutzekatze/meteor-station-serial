@@ -57,7 +57,6 @@ static int port_open(char* port_path, HANDLE *com) {
     dcb_serial_params.ByteSize = 8;
     dcb_serial_params.StopBits = ONESTOPBIT;
     dcb_serial_params.Parity = NOPARITY;
-
     dcb_serial_params.fDtrControl = DTR_CONTROL_ENABLE;
 
     if (!SetCommState(handle, &dcb_serial_params)) return -1;

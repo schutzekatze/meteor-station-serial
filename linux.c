@@ -63,6 +63,7 @@ static int port_open(char* port_path) {
     options.c_cflag &= ~CSTOPB;
     options.c_cflag &= ~CSIZE;
     options.c_cflag |= CS8;
+    options.c_cflag |= HUPCL;
 
     // Enable the following line if parity is turned on
     // options.c_iflag |= (INPCK | ISTRIP); //Enable parity check and strip
