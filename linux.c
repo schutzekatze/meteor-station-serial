@@ -19,7 +19,7 @@
 #define TTY_APPEND_UP_TO 256
 #define TTY_MAX_COUNT 256
 #define TTY_PATH_BUFFER_SIZE 256
-#define TIMEOUT_WINDOW 30 // In tenths of a second
+#define TIMEOUT_WINDOW 50 // In tenths of a second
 #define DEVICE_FLUSH_DELAY 2 // In seconds
 #define DEVICE_RECOGNITION_DELAY 4 // In seconds
 
